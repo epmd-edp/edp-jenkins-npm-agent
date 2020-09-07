@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM openshift/jenkins-slave-base-centos7:v3.11
+FROM epamedp/edp-jenkins-base-agent:1.0.0
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -23,19 +23,22 @@ ENV NODEJS_VERSION=8 \
     ENV=/usr/local/bin/scl_enable \
     PROMPT_COMMAND=". /usr/local/bin/scl_enable"
 
+USER root
+
 COPY contrib/bin/scl_enable /usr/local/bin/scl_enable
 COPY contrib/bin/configure-agent /usr/local/bin/configure-agent
 
 # Install NodeJS
 RUN yum install -y centos-release-scl-rh && \
+    curl https://raw.githubusercontent.com/cloudrouter/centos-repo/master/CentOS-Base.repo -o /etc/yum.repos.d/CentOS-Base.repo && \
     ln -s /usr/lib/node_modules/nodemon/bin/nodemon.js /usr/bin/nodemon && \
     yum install -y --setopt=tsflags=nodocs rh-nodejs${NODEJS_VERSION} rh-nodejs${NODEJS_VERSION}-npm rh-nodejs${NODEJS_VERSION}-nodejs-nodemon make gcc-c++ && \
     rpm -V rh-nodejs${NODEJS_VERSION} rh-nodejs${NODEJS_VERSION}-npm rh-nodejs${NODEJS_VERSION}-nodejs-nodemon make gcc-c++ && \
     yum clean all -y
 
 # Install Java11
-RUN yum remove java-1.8.0-openjdk-headless -y && \
-    yum install java-11-openjdk-devel.x86_64 -y && \
+RUN yum install java-11-openjdk-devel.x86_64 -y && \
+    rpm -V java-11-openjdk-devel.x86_64 && \
     yum clean all -y
 
 RUN chown -R "1001:0" "$HOME" && \
