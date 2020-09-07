@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM openshift/jenkins-slave-base-centos7:v3.11
+FROM epamedp/edp-jenkins-base-agent:1.0.0
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ENV NODEJS_VERSION=8 \
+ENV NODEJS_VERSION=12 \
     NPM_CONFIG_PREFIX=$HOME/.npm-global \
     PATH=$HOME/node_modules/.bin/:$HOME/.npm-global/bin/:$PATH \
     BASH_ENV=/usr/local/bin/scl_enable \
     ENV=/usr/local/bin/scl_enable \
     PROMPT_COMMAND=". /usr/local/bin/scl_enable"
+
+USER root
 
 COPY contrib/bin/scl_enable /usr/local/bin/scl_enable
 COPY contrib/bin/configure-agent /usr/local/bin/configure-agent
@@ -34,8 +36,8 @@ RUN yum install -y centos-release-scl-rh && \
     yum clean all -y
 
 # Install Java11
-RUN yum remove java-1.8.0-openjdk-headless -y && \
-    yum install java-11-openjdk-devel.x86_64 -y && \
+RUN yum install java-11-openjdk-devel.x86_64 -y && \
+    rpm -V java-11-openjdk-devel.x86_64 && \
     yum clean all -y
 
 RUN chown -R "1001:0" "$HOME" && \
